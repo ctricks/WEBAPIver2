@@ -35,6 +35,16 @@ namespace WEBAPI.Controllers
             return Ok(new { message = "Fight is start today : " + model.FightMatchDate });
         }
 
+        //CB-For Token Authorization 
+        //CB 10182023 - Adding authentication from FightMatchConfig if the match is alread start or not.
+        [Authorize(Roles = "Admin")]
+        [HttpPost("ClosedMatchConfig/{FightDate}")]
+        public IActionResult Closed(DateTime FightDate)
+        {
+            _fightmatchconfigService.End(FightDate);
+            return Ok(new { message = "Fight is now Close today : " + FightDate });
+        }
+
         [AllowAnonymous]
         [HttpGet("Lists")]
         public IActionResult GetAll()

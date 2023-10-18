@@ -14,6 +14,7 @@ namespace WEBAPI.Services
 
         public FightMatch GetLastFightMatchByDate(DateTime FightDate);
         public string Register(FightMatchRequest model);
+        public string UpdateMatch(FightMatchRequest model);
         public void UpdateFightStatus(FightMatchRequest model);
         public void UpdateFightResult(FightMatchRequest model);
         void Update(int id, FightMatchRequest model);
@@ -63,6 +64,10 @@ namespace WEBAPI.Services
             {
                 int matchNumber = fightmatchconfig.FirstOrDefault().MatchCurrentNumber;
 
+                if(matchNumber != 0)
+                {
+                    throw new AppException ( Message = "You already have open the match. Please use Create Match to update your Match Number" );
+                }
                 FightMatch fightMatch = new FightMatch() {
                     MatchDate = FightDate,
                     MatchNumber = matchNumber + 1,
@@ -120,6 +125,58 @@ namespace WEBAPI.Services
             
             return "Ok";
         }
+
+        public string UpdateMatch(FightMatchRequest model)
+        {
+            // validate
+            if (_context.FightMatches.Any(x => x.MatchDate == model.FightDate && x.MatchNumber == model.MatchNumber))
+            {
+
+                // validate match number in fightmatchconfig CB-10132023 Check Date if fightmatchconfig is already created
+                var fightmatchconfig = _context.FightMatchConfigs.Where(x => x.MatchDate.Year == model.FightDate.Year
+                                && x.MatchDate.Month == model.FightDate.Month
+                                && x.MatchDate.Day == model.FightDate.Day);
+
+                if (fightmatchconfig.ToList().Count() == 0)
+                {
+                    //throw new KeyNotFoundException("No FightMatch Number found for today. Please start the Fight Match first");
+                    return "Error: No FightMatch Number found for today. Please start the Fight Match first";
+                }
+
+                // map model to new user object
+                //var useradmin = _mapper.Map<UserAdmin>(model);
+
+                // hash password
+                //useradmin.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password);
+                FightMatch match = new FightMatch
+                {
+                    MatchDate = model.FightDate,
+                    MatchNumber = model.MatchNumber,
+                    MatchStatusId = (int)model.MatchStatusId,
+                    MatchResultId = (int)model.MatchResultId,
+                };
+
+                if(fightmatchconfig.FirstOrDefault() != null)
+                {
+                    fightmatchconfig.FirstOrDefault().MatchCurrentNumber = model.MatchNumber;
+                    _context.FightMatchConfigs.Update(fightmatchconfig.FirstOrDefault());
+                    _context.SaveChanges();
+                }
+                
+                _context.FightMatches.Add(match);
+
+                _context.SaveChanges();
+
+                return "Ok";
+
+            }
+            else
+            {
+                return "Error: Fight Number: '" + model.MatchNumber + "' is already exists";
+            }
+
+        }
+
 
         public void UpdateFightStatus(FightMatchRequest model)
         {

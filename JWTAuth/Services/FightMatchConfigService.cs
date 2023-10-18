@@ -10,6 +10,8 @@ namespace WEBAPI.Services
         public FightMatchConfig GetFightMatchById(int id);
         public void Start(FightMatchConfigRequest model);
 
+        public void End(DateTime MatchDate);
+
         public void Delete(int id);
 
     }
@@ -62,8 +64,26 @@ namespace WEBAPI.Services
                 _context.SaveChanges();
                 }
             }
+        public void End(DateTime FightMatchDate)
+        {
+            // validate match number in fightmatchconfig CB-10132023 Check Date if fightmatchconfig is already created
+            var fightmatchconfig = _context.FightMatchConfigs.Where(x => x.MatchDate.Year == FightMatchDate.Year
+                            && x.MatchDate.Month == FightMatchDate.Month
+                            && x.MatchDate.Day == FightMatchDate.Day).FirstOrDefault();
 
-            public void Delete(int id)
+            if (fightmatchconfig != null)
+            {
+                int matchNumber = fightmatchconfig.MatchCurrentNumber + 1;
+                // save user
+                fightmatchconfig.MatchCurrentNumber = matchNumber;
+
+                _context.FightMatchConfigs.Update(fightmatchconfig);
+
+                _context.SaveChanges();
+            }
+        }
+
+        public void Delete(int id)
             {
                 var fight = _context.FightMatches.Find(id);
                 if (fight == null) throw new KeyNotFoundException("Fight not found");

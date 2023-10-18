@@ -40,6 +40,22 @@ namespace WEBAPI.Controllers
             }
         }
 
+        //CB 10182023 - Adding authentication from FightMatchConfig if the match is alread start or not.
+        [Authorize(Roles = "Admin")]
+        [HttpPut("UpdateMatch")]
+        public IActionResult UpdateMatch(FightMatchRequest model)
+        {
+            string Message = _fightmatchService.UpdateMatch(model);
+            if (Message.ToLower() == "ok")
+            {
+                return Ok(new { message = "Fight Match successfully updated" });
+            }
+            else
+            {
+                return NotFound(new { message = Message });
+            }
+        }
+
         //CB-For Token Authorization 
         //CB 10182023 - Adding authentication from FightMatchConfig if the match is alread start or not.
         [Authorize(Roles = "Admin")]

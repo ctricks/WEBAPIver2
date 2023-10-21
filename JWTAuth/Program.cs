@@ -10,11 +10,13 @@ using Microsoft.AspNetCore.Builder;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("WebApiDatabase")));
+
 builder.Services.AddCors(confg =>
                confg.AddPolicy("AllowAll",
                p => p.AllowAnyOrigin()
                      .AllowAnyMethod()
                      .AllowAnyHeader()));
+
 builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 builder.Services.AddControllers();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -90,6 +92,7 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 
 app.UseCors("CorsPolicy");
+app.UseCors();
 
 app.UseSwagger();
 app.UseSwaggerUI();

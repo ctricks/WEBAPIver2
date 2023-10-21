@@ -6,6 +6,7 @@
         public string? RefreshToken { get; set; }
 
         public DateTime? ExpireDate { get; set; }
+        public DateTime? TodaysDate { get; set; }
         public int? UserId { get; set; }
         public string? UserRole { get; set; }
         public string? UserName { get; set; }

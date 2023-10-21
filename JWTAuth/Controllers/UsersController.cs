@@ -17,19 +17,35 @@ namespace WEBAPI.Controllers
     public class UsersController : ControllerBase
     {
         private IUserService _userService;
-        private IUserService _useradminService;
+        private IUserAdminService _useradminService;
         private readonly ITokenService _tokenService;
         private readonly AppSettings _appSettings;
         
 
         public UsersController(
             IUserService userService,
+            IUserAdminService useradminService,
             ITokenService tokenService,
             IOptions<AppSettings> appSettings)
         {
+            _useradminService = useradminService;
             _userService = userService;
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _appSettings = appSettings.Value;
+        }
+
+        [Authorize(Roles = "Admin,user")]
+        [HttpGet("isExpireToken")]
+        public IActionResult CheckExipryBearerToken()
+        {
+            //Get Username via http (authorize user)
+            var Username = HttpContext.User.Identities.FirstOrDefault().Name.ToString();
+
+            if (Username == null) throw new Exception("Invalid Token Bearer. Please check");
+
+            var useradmin = _useradminService.CheckTokenByBearerToken(Username);
+
+            return Ok(useradmin);
         }
 
         [AllowAnonymous]

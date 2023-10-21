@@ -7,6 +7,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using WEBAPI.Entities;
 using WEBAPI.Helpers;
@@ -79,7 +80,6 @@ namespace WEBAPI.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             useradmin.TokenID = tokenHandler.WriteToken(token);
 
-
             _context.UserAdmins.Update(useradmin).Property(x => x.Id).IsModified = false;
             
             _context.SaveChanges();
@@ -130,12 +130,9 @@ namespace WEBAPI.Services
             bool isExpire = false;
 
             DateTime TokenDate = Convert.ToDateTime(user.RefreshTokenExpiryTime);
-            DateTime TodayDate = Convert.ToDateTime(DateTime.Now.ToLocalTime().ToString());
+            DateTime TodayDate = Convert.ToDateTime(DateTime.Now.ToString());
 
-            if (TokenDate <= TodayDate )
-            {
-                isExpire = true;
-            }
+            isExpire = ValidateToken(user.TokenID);
 
             TokenInfoResponse response = new TokenInfoResponse()
             {
@@ -146,10 +143,58 @@ namespace WEBAPI.Services
                 UserRole = user.Role,
                 UserId = user.Id,
                 ExpireDate = user.RefreshTokenExpiryTime,
+                TodaysDate = TodayDate,
                 isExpired = isExpire            
             };
 
             return response;
+        }
+
+        public TokenValidationParameters GetValidationParameters()
+        {
+            var key = Encoding.ASCII.GetBytes(_config["CS:Key"]);
+            return new TokenValidationParameters()
+            {   
+                ValidateLifetime = false, // Because there is no expiration in the generated token
+                ValidateAudience = false, // Because there is no audiance in the generated token
+                ValidateIssuer = false,   // Because there is no issuer in the generated token
+                ValidIssuer = _config["CS:Issuer"],
+                ValidAudience = _config["CS:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(key) // The same key as the one that generate the token
+            };
+        }
+
+        private bool ValidateToken(string authToken)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = GetValidationParameters();
+
+            SecurityToken validatedToken;
+            IPrincipal principal = tokenHandler.ValidateToken(authToken, validationParameters, out validatedToken);
+
+
+            return CheckTokenIsValid(authToken);
+        }
+
+        public static long GetTokenExpirationTime(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtSecurityToken = handler.ReadJwtToken(token);
+            var tokenExp = jwtSecurityToken.Claims.First(claim => claim.Type.Equals("exp")).Value;
+            var ticks = long.Parse(tokenExp);
+            return ticks;
+        }
+
+        public static bool CheckTokenIsValid(string token)
+        {
+            var tokenTicks = GetTokenExpirationTime(token);
+            var tokenDate = DateTimeOffset.FromUnixTimeSeconds(tokenTicks).UtcDateTime;
+
+            var now = DateTime.Now.ToUniversalTime();
+
+            var valid = tokenDate >= now;
+
+            return valid;
         }
 
 

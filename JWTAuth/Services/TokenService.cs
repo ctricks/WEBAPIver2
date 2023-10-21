@@ -47,8 +47,8 @@ namespace WEBAPI.Services
             var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
             var tokeOptions = new JwtSecurityToken(
                 //For JWT Configuration JSON
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"], 
+                issuer: _config["CS:Issuer"],
+                audience: _config["CS:Audience"], 
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(expireMinute),
                 signingCredentials: signinCredentials

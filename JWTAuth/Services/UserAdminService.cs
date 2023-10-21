@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using WEBAPI.Entities;
 using WEBAPI.Helpers;
+using WEBAPI.Models;
 using WEBAPI.Models.Users;
 
 namespace WEBAPI.Services
@@ -77,8 +78,8 @@ namespace WEBAPI.Services
             useradmin.TokenID = tokenHandler.WriteToken(token);
 
 
-
-            _context.UserAdmins.Update(useradmin);
+            _context.UserAdmins.Update(useradmin).Property(x => x.Id).IsModified = false;
+            
             _context.SaveChanges();
 
             AdminAuthenticateResponse response = new AdminAuthenticateResponse {

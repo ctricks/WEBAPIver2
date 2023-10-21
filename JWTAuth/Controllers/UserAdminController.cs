@@ -61,7 +61,7 @@ namespace WEBAPI.Controllers
             return Ok(usersadmin);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,user")]
         [HttpGet("ViaBearerToken")]
         public IActionResult GetByIdBearerToken()
         {
@@ -71,6 +71,20 @@ namespace WEBAPI.Controllers
             if (Username == null) throw new Exception("Invalid Token Bearer. Please check");
 
             var useradmin = _useradminService.GetByBearerToken(Username);
+            return Ok(useradmin);
+        }
+
+        [Authorize(Roles = "Admin,user")]
+        [HttpGet("isExpireToken")]
+        public IActionResult CheckExipryBearerToken()
+        {
+            //Get Username via http (authorize user)
+            var Username = HttpContext.User.Identities.FirstOrDefault().Name.ToString();
+
+            if (Username == null) throw new Exception("Invalid Token Bearer. Please check");
+
+            var useradmin = _useradminService.CheckTokenByBearerToken(Username);
+
             return Ok(useradmin);
         }
 

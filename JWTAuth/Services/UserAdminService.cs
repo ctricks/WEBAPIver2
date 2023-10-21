@@ -12,6 +12,7 @@ using WEBAPI.Entities;
 using WEBAPI.Helpers;
 using WEBAPI.Models;
 using WEBAPI.Models.Users;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace WEBAPI.Services
 {
@@ -21,6 +22,7 @@ namespace WEBAPI.Services
         IEnumerable<UserAdmin> GetAll();
 
         UserAdmin GetByBearerToken(string Username);
+        TokenInfoResponse CheckTokenByBearerToken(string Username);
         UserAdmin GetById(int id);
 
         UserAdmin GetUserByToken(string Token);
@@ -120,6 +122,36 @@ namespace WEBAPI.Services
             if (user == null) throw new KeyNotFoundException("User not found");
             return user;        
         }
+
+        public TokenInfoResponse CheckTokenByBearerToken(string Username)
+        {
+            var user = _context.UserAdmins.Where(x => x.UserName == Username).FirstOrDefault();
+            if (user == null) throw new KeyNotFoundException("User not found");
+            bool isExpire = false;
+
+            DateTime TokenDate = Convert.ToDateTime(user.RefreshTokenExpiryTime);
+            DateTime TodayDate = Convert.ToDateTime(DateTime.Now.ToLocalTime().ToString());
+
+            if (TokenDate <= TodayDate )
+            {
+                isExpire = true;
+            }
+
+            TokenInfoResponse response = new TokenInfoResponse()
+            {
+                AccessToken = user.TokenID,
+                RefreshToken = user.RefreshToken,
+                UserName = user.UserName,
+                PhoneNumber = user.PhoneNumber,
+                UserRole = user.Role,
+                UserId = user.Id,
+                ExpireDate = user.RefreshTokenExpiryTime,
+                isExpired = isExpire            
+            };
+
+            return response;
+        }
+
 
         public UserAdmin GetUserByToken(string Token)
         {

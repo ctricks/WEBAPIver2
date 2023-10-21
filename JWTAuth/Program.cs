@@ -92,7 +92,16 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 
 app.UseCors("CorsPolicy");
-app.UseCors();
+// global cors policy
+app.UseCors(x => x
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .WithOrigins("http://localhost:3000").AllowAnyMethod()
+        .WithOrigins("https://cockxing-298a6.web.app").AllowAnyMethod()
+        );
+    
+
 
 app.UseSwagger();
 app.UseSwaggerUI();

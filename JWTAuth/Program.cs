@@ -99,6 +99,7 @@ app.UseCors(x => x
         .AllowAnyHeader()
         .WithOrigins("http://localhost:3000").AllowAnyMethod()
         .WithOrigins("https://cockxing-298a6.web.app").AllowAnyMethod()
+        .WithOrigins("*").AllowAnyMethod()
         );
     
 

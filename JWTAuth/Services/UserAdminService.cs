@@ -40,13 +40,16 @@ namespace WEBAPI.Services
     {
         private DataContext _context;        
         private IConfiguration _config;
+        private ITokenService _tokenService;
 
         public UserAdminService(
             DataContext context,            
-            IConfiguration config)
+            IConfiguration config,
+            ITokenService tokenService)
         {
             _context = context;            
             _config = config;
+            _tokenService = tokenService;
         }
 
         public AdminAuthenticateResponse Authenticate(AdminAuthenticateRequest model)

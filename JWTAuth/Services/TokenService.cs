@@ -69,13 +69,13 @@ namespace WEBAPI.Services
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+            var key = Encoding.ASCII.GetBytes(_config["CS:key"]);
 
             var tokenValidationParameters = new TokenValidationParameters()
             { 
-                ValidateLifetime = false, // Because there is no expiration in the generated token
-                ValidateAudience = false, // Because there is no audiance in the generated token
-                ValidateIssuer = false,   // Because there is no issuer in the generated token
+                ValidateLifetime = true, // Because there is no expiration in the generated token
+                ValidateAudience = true, // Because there is no audiance in the generated token
+                ValidateIssuer = true,   // Because there is no issuer in the generated token
                 ValidIssuer = _config["CS:Issuer"],
                 ValidAudience = _config["CS:Audience"],
                 IssuerSigningKey = new SymmetricSecurityKey(key) // The same key as the one that generate the token
@@ -83,6 +83,7 @@ namespace WEBAPI.Services
 
 
             var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+
             if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("Invalid token");
 

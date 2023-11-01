@@ -10,6 +10,7 @@ namespace WEBAPI.Entities
         public double? total_balance { get; set; }
 
         public int? UserId { get; set; }
+        public string UserName { get; set; }
         
         public virtual ICollection<WalletTxn> WalletTrans { get; set; }
 

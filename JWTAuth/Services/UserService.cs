@@ -144,7 +144,7 @@ namespace WEBAPI.Services
 
             List<UserWallet>wallet = new List<UserWallet>();
 
-            UserWallet uwallet = new UserWallet { available_balance = 0,total_balance=0};
+            UserWallet uwallet = new UserWallet { available_balance = 0,total_balance=0, UserName = user.UserName};
             
             wallet.Add(uwallet);
 
@@ -154,6 +154,9 @@ namespace WEBAPI.Services
             _context.UserAdmins.Add(user);
             
             _context.SaveChanges();
+
+
+
         }
 
         public void Logout(string TokenId)

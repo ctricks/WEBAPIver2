@@ -29,7 +29,7 @@ namespace WEBAPI.Services
         public void Create(BetTransactionRequest model)
         {
             //CB-10072023 Validate userID if exists
-            var user = _context.Users.Where(x => x.Id == model.UserId).FirstOrDefault();
+            var user = _context.UserAdmins.Where(x => x.Id == model.UserId).FirstOrDefault();
             if (user == null) throw new AppException("User is invalid. Please use your valid account");
 
             //CB-10072023 Get Color id from config

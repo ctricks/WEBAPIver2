@@ -66,7 +66,7 @@ namespace WEBAPI.Services
         {
             //CB-09292023 user TokenID 
             //Validate tokenID via user
-            if (!_context.Users.Any(x => x.TokenID == model.UserTokenID))
+            if (!_context.UserAdmins.Any(x => x.TokenID == model.UserTokenID))
                 throw new AppException("TokenID is not found. Please login first");
 
             // save wallet Transactions
@@ -82,7 +82,7 @@ namespace WEBAPI.Services
             if (userinfo == null)
                 throw new AppException("Token is invalid. Please login");
 
-            var UserWallet = getUWallet(userinfo.Id);
+            var UserWallet = getUWallet(userinfo.UserName);
 
             if (userinfo == null)
             {
@@ -93,6 +93,7 @@ namespace WEBAPI.Services
                 userwallet.available_balance = model.available_balance;
                 userwallet.total_balance = model.total_balance;
                 userwallet.UserId = userinfo.Id;
+                userwallet.UserName = userinfo.UserName;
 
                 _context.UserWallet.Add(userwallet);
             }
@@ -102,7 +103,7 @@ namespace WEBAPI.Services
                 wallettrans.UserIDRef = userinfo.Id;
 
                 //CB-09302023 Update the Userwallet then the wallet transaction as Additional
-                UserWallet userwallet = getUWallet(userinfo.Id);
+                UserWallet userwallet = getUWallet(userinfo.UserName);
 
                 userwallet.WalletTrans = new List<WalletTxn>();
                 userwallet.WalletTrans.Add(wallettrans);
@@ -188,15 +189,15 @@ namespace WEBAPI.Services
 
             return response;
         }
-        private UserWallet getUWallet(int id)
+        private UserWallet getUWallet(string Username)
         {
-            var userwallet = _context.UserWallet.Where(x=>x.UserId == id).FirstOrDefault();
+            var userwallet = _context.UserWallet.Where(x=>x.UserName == Username).FirstOrDefault();
             if (userwallet == null) throw new KeyNotFoundException("User Wallet not found");
             return userwallet;
         }
-        private User getUsersViaToken(string TokenID)
+        private UserAdmin getUsersViaToken(string TokenID)
         {
-            var userwallet = _context.Users.Where(x=>x.TokenID == TokenID).FirstOrDefault();
+            var userwallet = _context.UserAdmins.Where(x=>x.TokenID == TokenID).FirstOrDefault();
             if (userwallet == null) throw new KeyNotFoundException("User not found");
             return userwallet;
         }
